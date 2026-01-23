@@ -1,0 +1,21 @@
+{
+  "name": "seismic-platformer",
+  "version": "1.0.0",
+  "description": "A Mario-style platformer game with 9 difficulty levels for the Seismic Discord community",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8000 -o",
+    "dev": "npx http-server -p 8000 -o -c-1"
+  },
+  "keywords": [
+    "game",
+    "platformer",
+    "phaser",
+    "seismic",
+    "discord"
+  ],
+  "author": "Seismic Community",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}
