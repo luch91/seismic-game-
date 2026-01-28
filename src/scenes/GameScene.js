@@ -713,16 +713,23 @@ class GameScene extends Phaser.Scene {
         if (!this.sys.game.device.input.touch) return;
 
         this.touchInput = { left: false, right: false, jump: false };
+        const width = this.cameras.main.width;
         const height = this.cameras.main.height;
-        const btnAlpha = 0.35;
-        const btnSize = 50;
+        const btnAlpha = 0.5;
+        const btnSize = Math.min(60, width * 0.08); // Scale button size based on screen width
         const depth = 200;
 
+        // Position buttons with proportional spacing
+        const margin = Math.max(15, width * 0.02);
+        const bottomMargin = Math.max(20, height * 0.05);
+
         // Left button
-        const leftBtn = this.add.circle(60, height - 70, btnSize, 0xc8a898, btnAlpha);
+        const leftX = margin + btnSize;
+        const leftY = height - bottomMargin - btnSize;
+        const leftBtn = this.add.circle(leftX, leftY, btnSize, 0xc8a898, btnAlpha);
         leftBtn.setScrollFactor(0).setDepth(depth).setInteractive();
-        const leftArrow = this.add.text(60, height - 70, '<', {
-            fontSize: '32px', fontFamily: 'monospace', fill: '#ffffff'
+        const leftArrow = this.add.text(leftX, leftY, '<', {
+            fontSize: Math.floor(btnSize * 0.65) + 'px', fontFamily: 'monospace', fill: '#ffffff'
         }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
 
         leftBtn.on('pointerdown', () => { this.touchInput.left = true; });
@@ -730,10 +737,12 @@ class GameScene extends Phaser.Scene {
         leftBtn.on('pointerout', () => { this.touchInput.left = false; });
 
         // Right button
-        const rightBtn = this.add.circle(180, height - 70, btnSize, 0xc8a898, btnAlpha);
+        const rightX = leftX + btnSize * 2 + margin;
+        const rightY = leftY;
+        const rightBtn = this.add.circle(rightX, rightY, btnSize, 0xc8a898, btnAlpha);
         rightBtn.setScrollFactor(0).setDepth(depth).setInteractive();
-        const rightArrow = this.add.text(180, height - 70, '>', {
-            fontSize: '32px', fontFamily: 'monospace', fill: '#ffffff'
+        const rightArrow = this.add.text(rightX, rightY, '>', {
+            fontSize: Math.floor(btnSize * 0.65) + 'px', fontFamily: 'monospace', fill: '#ffffff'
         }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
 
         rightBtn.on('pointerdown', () => { this.touchInput.right = true; });
@@ -741,10 +750,12 @@ class GameScene extends Phaser.Scene {
         rightBtn.on('pointerout', () => { this.touchInput.right = false; });
 
         // Jump button (right side)
-        const jumpBtn = this.add.circle(this.cameras.main.width - 80, height - 70, btnSize + 5, 0x6b2a2a, btnAlpha);
+        const jumpX = width - margin - btnSize;
+        const jumpY = leftY;
+        const jumpBtn = this.add.circle(jumpX, jumpY, btnSize * 1.1, 0x6b2a2a, btnAlpha);
         jumpBtn.setScrollFactor(0).setDepth(depth).setInteractive();
-        const jumpLabel = this.add.text(this.cameras.main.width - 80, height - 70, 'JUMP', {
-            fontSize: '16px', fontFamily: 'monospace', fill: '#ffffff', fontStyle: 'bold'
+        const jumpLabel = this.add.text(jumpX, jumpY, 'JUMP', {
+            fontSize: Math.floor(btnSize * 0.28) + 'px', fontFamily: 'monospace', fill: '#ffffff', fontStyle: 'bold'
         }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
 
         jumpBtn.on('pointerdown', () => { this.touchInput.jump = true; });
@@ -752,10 +763,11 @@ class GameScene extends Phaser.Scene {
         jumpBtn.on('pointerout', () => { this.touchInput.jump = false; });
 
         // Pause button (top-right)
-        const pauseBtn = this.add.circle(this.cameras.main.width - 30, 30, 20, 0x3a1a1a, btnAlpha);
+        const pauseSize = Math.min(25, width * 0.035);
+        const pauseBtn = this.add.circle(width - margin - pauseSize, margin + pauseSize, pauseSize, 0x3a1a1a, btnAlpha);
         pauseBtn.setScrollFactor(0).setDepth(depth).setInteractive({ useHandCursor: true });
-        const pauseLabel = this.add.text(this.cameras.main.width - 30, 30, '||', {
-            fontSize: '16px', fontFamily: 'monospace', fill: '#c8a898', fontStyle: 'bold'
+        const pauseLabel = this.add.text(width - margin - pauseSize, margin + pauseSize, '||', {
+            fontSize: Math.floor(pauseSize * 0.7) + 'px', fontFamily: 'monospace', fill: '#c8a898', fontStyle: 'bold'
         }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
 
         pauseBtn.on('pointerdown', () => {
