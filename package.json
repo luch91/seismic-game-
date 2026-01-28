@@ -1,7 +1,7 @@
 {
-  "name": "seismic-platformer",
+  "name": "seismic-mag-rush",
   "version": "1.0.0",
-  "description": "A Mario-style platformer game with 9 difficulty levels for the Seismic Discord community",
+  "description": "A Mario-style platformer game with 9 Mag difficulty levels for the Seismic Discord community",
   "main": "index.html",
   "scripts": {
     "start": "npx http-server -p 8000 -o",

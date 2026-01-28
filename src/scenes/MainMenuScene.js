@@ -8,15 +8,46 @@ class MainMenuScene extends Phaser.Scene {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
 
-        // Background
-        this.add.rectangle(0, 0, width, height, 0x1a0033).setOrigin(0);
+        // Restore the Discord panel (hidden during gameplay)
+        const discordPanel = document.getElementById('discord-panel');
+        if (discordPanel) discordPanel.style.display = '';
 
-        // Add some background stars
+        // Resume audio context on any interaction (required by browsers)
+        this.input.once('pointerdown', () => {
+            soundManager.resume();
+            soundManager.startMusic('menu');
+        });
+
+        // Try to start menu music (will work if audio already enabled)
+        soundManager.stopMusic();
+        soundManager.startMusic('menu');
+
+        // Background - dark teal base
+        this.add.rectangle(0, 0, width, height, 0x0a1a1a).setOrigin(0);
+
+        // Add diagonal gradient overlay (maroon band)
+        const gradient = this.add.graphics();
+        gradient.fillStyle(0x6b2a2a, 0.3);
+        gradient.beginPath();
+        gradient.moveTo(0, 0);
+        gradient.lineTo(width, 0);
+        gradient.lineTo(width, height * 0.5);
+        gradient.lineTo(0, height * 0.8);
+        gradient.closePath();
+        gradient.fillPath();
+
+        // Warm beige glow in top-right
+        gradient.fillStyle(0xc8a898, 0.15);
+        gradient.fillCircle(width * 0.85, height * 0.15, 200);
+
+        // Add some background particles
         for (let i = 0; i < 50; i++) {
             const x = Phaser.Math.Between(0, width);
             const y = Phaser.Math.Between(0, height);
             const size = Phaser.Math.Between(1, 3);
-            const star = this.add.circle(x, y, size, 0xff00ff, 0.5);
+            // Mix of warm and teal tones for stars
+            const color = Phaser.Math.Between(0, 1) > 0.5 ? 0xc8a898 : 0x4a6a6a;
+            const star = this.add.circle(x, y, size, color, 0.5);
 
             this.tweens.add({
                 targets: star,
@@ -28,15 +59,15 @@ class MainMenuScene extends Phaser.Scene {
         }
 
         // Title
-        const title = this.add.text(width / 2, height / 3, 'SEISMIC\nPLATFORMER', {
+        const title = this.add.text(width / 2, height / 3, 'SEISMIC\nMAG-RUSH', {
             fontSize: '64px',
             fontFamily: 'monospace',
-            fill: '#ff00ff',
+            fill: '#c8a898',
             align: 'center',
             fontStyle: 'bold'
         });
         title.setOrigin(0.5);
-        title.setStroke('#aa00ff', 8);
+        title.setStroke('#6b2a2a', 8);
 
         // Animated title effect
         this.tweens.add({
@@ -52,7 +83,7 @@ class MainMenuScene extends Phaser.Scene {
         const subtitle = this.add.text(width / 2, height / 3 + 100, 'Conquer the Mag Levels', {
             fontSize: '20px',
             fontFamily: 'monospace',
-            fill: '#ffffff',
+            fill: '#d4b8a8',
             align: 'center'
         });
         subtitle.setOrigin(0.5);
@@ -62,15 +93,16 @@ class MainMenuScene extends Phaser.Scene {
             fontSize: '32px',
             fontFamily: 'monospace',
             fill: '#ffffff',
-            backgroundColor: '#aa00ff',
+            backgroundColor: '#6b2a2a',
             padding: { x: 20, y: 10 }
         });
         startButton.setOrigin(0.5);
         startButton.setInteractive({ useHandCursor: true });
 
         startButton.on('pointerover', () => {
-            startButton.setStyle({ fill: '#ff00ff' });
+            startButton.setStyle({ fill: '#c8a898' });
             startButton.setScale(1.1);
+            soundManager.playMenuHover();
         });
 
         startButton.on('pointerout', () => {
@@ -79,6 +111,7 @@ class MainMenuScene extends Phaser.Scene {
         });
 
         startButton.on('pointerdown', () => {
+            soundManager.playMenuSelect();
             this.cameras.main.fade(500, 0, 0, 0);
             this.time.delayedCall(500, () => {
                 this.scene.start('LevelSelectScene');
@@ -90,7 +123,7 @@ class MainMenuScene extends Phaser.Scene {
             'Arrow Keys: Move | Space/Up: Jump | Collect Crystals | Avoid Enemies', {
             fontSize: '14px',
             fontFamily: 'monospace',
-            fill: '#ffffff',
+            fill: '#a09088',
             align: 'center'
         });
         instructions.setOrigin(0.5);
@@ -99,7 +132,7 @@ class MainMenuScene extends Phaser.Scene {
         const credits = this.add.text(width / 2, height - 30, 'Seismic Discord Community', {
             fontSize: '12px',
             fontFamily: 'monospace',
-            fill: '#aa00ff',
+            fill: '#8b4a3a',
             align: 'center'
         });
         credits.setOrigin(0.5);

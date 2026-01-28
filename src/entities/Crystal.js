@@ -59,7 +59,7 @@ class Crystal {
             }
         });
 
-        this.scene.sound.play('collect', { volume: 0.3 });
+        soundManager.playCollect();
         this.scene.crystalCollected();
     }
 

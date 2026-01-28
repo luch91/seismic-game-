@@ -17,10 +17,10 @@ class BootScene extends Phaser.Scene {
         const loadingText = this.make.text({
             x: width / 2,
             y: height / 2 - 50,
-            text: 'Loading Seismic Platformer...',
+            text: 'Loading Seismic Mag-Rush...',
             style: {
                 font: '20px monospace',
-                fill: '#ff00ff'
+                fill: '#c8a898'
             }
         });
         loadingText.setOrigin(0.5, 0.5);
@@ -40,7 +40,7 @@ class BootScene extends Phaser.Scene {
         this.load.on('progress', (value) => {
             percentText.setText(parseInt(value * 100) + '%');
             progressBar.clear();
-            progressBar.fillStyle(0xff00ff, 1);
+            progressBar.fillStyle(0x8b4a3a, 1);
             progressBar.fillRect(width / 2 - 150, height / 2 - 15, 300 * value, 30);
         });
 
@@ -51,49 +51,52 @@ class BootScene extends Phaser.Scene {
             percentText.destroy();
         });
 
-        // Load any external assets here
-        // this.load.image('crystal', 'assets/images/seismic-crystal.png');
-
-        // For now, we'll generate assets procedurally
+        // Load the seismic crystal image
+        this.load.image('crystal_image', 'assets/images/seismic-crystal.jpg');
     }
 
     create() {
-        // Generate all game assets
+        // Initialize sound manager
+        soundManager.init();
+
+        // Generate all game assets (except crystal if image loaded)
         AssetGenerator.generateAll(this);
 
-        // Create simple sound effects using Web Audio
-        this.createSoundEffects();
+        // Create crystal texture from loaded image (scaled down for game)
+        if (this.textures.exists('crystal_image')) {
+            this.createCrystalFromImage();
+        }
 
         // Move to main menu
         this.scene.start('MainMenuScene');
     }
 
-    createSoundEffects() {
-        // Jump sound
-        if (!this.sound.get('jump')) {
-            const jumpSound = this.sound.add('jump', { volume: 0.3 });
-            // Note: In a real game, you'd load actual audio files
-            // For now, Phaser will use silence, but the code structure is ready
-        }
+    createCrystalFromImage() {
+        // The crystal image is loaded, now we need to create a properly sized texture
+        // We'll use the image directly but scale it in the Crystal class
+        // Create an alias so Crystal class can use either procedural or image texture
 
-        // Collect sound
-        if (!this.sound.get('collect')) {
-            const collectSound = this.sound.add('collect', { volume: 0.3 });
-        }
+        // Get the source image
+        const sourceTexture = this.textures.get('crystal_image');
+        const sourceImage = sourceTexture.getSourceImage();
 
-        // Enemy defeat sound
-        if (!this.sound.get('enemy_defeat')) {
-            const defeatSound = this.sound.add('enemy_defeat', { volume: 0.3 });
-        }
+        // Create a canvas to resize the image to game-friendly dimensions
+        const canvas = document.createElement('canvas');
+        const size = 48; // Crystal size in pixels
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
 
-        // Level complete sound
-        if (!this.sound.get('level_complete')) {
-            const completeSound = this.sound.add('level_complete', { volume: 0.5 });
-        }
+        // Draw the image scaled to fit
+        ctx.drawImage(sourceImage, 0, 0, size, size);
 
-        // Game over sound
-        if (!this.sound.get('game_over')) {
-            const gameOverSound = this.sound.add('game_over', { volume: 0.5 });
-        }
+        // Add a slight glow effect
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#c8a898';
+
+        // Create new texture from canvas
+        this.textures.addCanvas('crystal', canvas);
+
+        console.log('Crystal texture created from seismic-crystal.jpg');
     }
 }

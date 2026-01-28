@@ -6,6 +6,7 @@ class DiscordAuth {
         this.scopes = GameConfig.discord.scopes.join(' ');
         this.authenticated = false;
         this.userData = null;
+        this.useRealAuth = this.clientId && this.clientId !== 'YOUR_DISCORD_CLIENT_ID';
 
         this.init();
     }
@@ -39,6 +40,11 @@ class DiscordAuth {
             discordPanel.classList.remove('hidden');
 
             discordButton.addEventListener('click', () => {
+                // Resume audio context on user interaction
+                if (typeof soundManager !== 'undefined') {
+                    soundManager.resume();
+                }
+
                 if (this.authenticated) {
                     this.logout();
                 } else {
@@ -49,26 +55,24 @@ class DiscordAuth {
     }
 
     login() {
-        // For demo purposes, simulate Discord auth
-        // In production, this would redirect to Discord OAuth
-        this.simulateDiscordAuth();
-
-        // Uncomment below for real Discord OAuth
-        /*
-        const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${this.clientId}&redirect_uri=${encodeURIComponent(this.redirectUri)}&response_type=token&scope=${encodeURIComponent(this.scopes)}`;
-        window.location.href = authUrl;
-        */
+        if (this.useRealAuth) {
+            // Real Discord OAuth redirect
+            const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${this.clientId}&redirect_uri=${encodeURIComponent(this.redirectUri)}&response_type=token&scope=${encodeURIComponent(this.scopes)}`;
+            window.location.href = authUrl;
+        } else {
+            // Demo mode — simulate Discord auth
+            this.simulateDiscordAuth();
+        }
     }
 
     simulateDiscordAuth() {
-        // Simulate successful Discord authentication
         const mockUser = {
             id: '123456789',
             username: 'SeismicPlayer',
             discriminator: '0001',
             avatar: null,
-            roles: ['Mag5', 'Mag3', 'Mag1'], // User has Mag1-5 unlocked
-            unlockedLevels: [1, 2, 3, 4, 5] // Unlocked levels based on roles
+            roles: ['Mag5', 'Mag3', 'Mag1'],
+            unlockedLevels: [1, 2, 3, 4, 5]
         };
 
         this.userData = mockUser;
@@ -77,12 +81,10 @@ class DiscordAuth {
         localStorage.setItem('seismicDiscordAuth', JSON.stringify(mockUser));
         this.updateUI();
 
-        // Show success message
-        alert('Connected to Discord!\nYou have unlocked Mag1-Mag5 levels.');
+        alert('Demo Mode: Connected as SeismicPlayer\nMag1-Mag5 unlocked. Complete levels to unlock more!');
     }
 
     handleOAuthCallback() {
-        // Check if we have an access token in the URL hash
         const hash = window.location.hash;
         if (hash && hash.includes('access_token=')) {
             const params = new URLSearchParams(hash.substring(1));
@@ -100,30 +102,37 @@ class DiscordAuth {
         try {
             // Fetch user data from Discord API
             const userResponse = await fetch('https://discord.com/api/users/@me', {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
+                headers: { Authorization: `Bearer ${accessToken}` }
             });
+
+            if (!userResponse.ok) throw new Error('Failed to fetch user data');
             const userData = await userResponse.json();
 
             // Fetch guild member data to get roles
-            const guildId = 'YOUR_SEISMIC_GUILD_ID'; // Replace with actual guild ID
-            const memberResponse = await fetch(`https://discord.com/api/users/@me/guilds/${guildId}/member`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            });
-            const memberData = await memberResponse.json();
+            const guildId = GameConfig.discord.guildId;
+            let unlockedLevels = [1]; // Default: at least Mag1
 
-            // Determine unlocked levels based on roles
-            const unlockedLevels = this.calculateUnlockedLevels(memberData.roles);
+            if (guildId && guildId !== 'YOUR_SEISMIC_GUILD_ID') {
+                try {
+                    const memberResponse = await fetch(
+                        `https://discord.com/api/users/@me/guilds/${guildId}/member`,
+                        { headers: { Authorization: `Bearer ${accessToken}` } }
+                    );
+
+                    if (memberResponse.ok) {
+                        const memberData = await memberResponse.json();
+                        unlockedLevels = this.calculateUnlockedLevels(memberData.roles);
+                    }
+                } catch (guildError) {
+                    console.warn('Could not fetch guild roles, defaulting to Mag1:', guildError);
+                }
+            }
 
             this.userData = {
                 id: userData.id,
-                username: userData.username,
-                discriminator: userData.discriminator,
+                username: userData.username || userData.global_name,
+                discriminator: userData.discriminator || '0',
                 avatar: userData.avatar,
-                roles: memberData.roles,
                 unlockedLevels: unlockedLevels
             };
 
@@ -138,24 +147,13 @@ class DiscordAuth {
     }
 
     calculateUnlockedLevels(roleIds) {
-        // Map role IDs to Mag levels
-        // In production, you'd have actual role IDs from your Discord server
-        const roleMapping = {
-            'MAG1_ROLE_ID': 1,
-            'MAG2_ROLE_ID': 2,
-            'MAG3_ROLE_ID': 3,
-            'MAG4_ROLE_ID': 4,
-            'MAG5_ROLE_ID': 5,
-            'MAG6_ROLE_ID': 6,
-            'MAG7_ROLE_ID': 7,
-            'MAG8_ROLE_ID': 8,
-            'MAG9_ROLE_ID': 9
-        };
+        // Map Discord role IDs to Mag levels
+        // Replace these with your actual Discord server role IDs
+        const roleMapping = GameConfig.discord.roleMapping || {};
 
         const unlockedLevels = [];
         let highestMag = 0;
 
-        // Check which Mag roles the user has
         roleIds.forEach(roleId => {
             const magLevel = roleMapping[roleId];
             if (magLevel && magLevel > highestMag) {
@@ -168,7 +166,7 @@ class DiscordAuth {
             unlockedLevels.push(i);
         }
 
-        // Default: unlock at least the first level
+        // Default: unlock at least Mag1
         if (unlockedLevels.length === 0) {
             unlockedLevels.push(1);
         }
@@ -182,18 +180,21 @@ class DiscordAuth {
         const discordButton = document.getElementById('discord-connect');
 
         if (this.authenticated && this.userData) {
-            const username = this.userData.username + '#' + this.userData.discriminator;
-            userNameElement.textContent = username;
+            // Modern Discord uses global_name, fallback to username#discriminator
+            const displayName = this.userData.discriminator === '0'
+                ? this.userData.username
+                : this.userData.username + '#' + this.userData.discriminator;
+            userNameElement.textContent = displayName;
 
-            // Set avatar if available
             if (this.userData.avatar) {
                 const avatarUrl = `https://cdn.discordapp.com/avatars/${this.userData.id}/${this.userData.avatar}.png`;
                 userAvatarElement.src = avatarUrl;
                 userAvatarElement.style.display = 'block';
             } else {
-                // Default Discord avatar
-                const defaultAvatar = parseInt(this.userData.discriminator) % 5;
-                userAvatarElement.src = `https://cdn.discordapp.com/embed/avatars/${defaultAvatar}.png`;
+                const defaultIndex = this.userData.id
+                    ? (BigInt(this.userData.id) >> 22n) % 6n
+                    : 0n;
+                userAvatarElement.src = `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
                 userAvatarElement.style.display = 'block';
             }
 
@@ -212,7 +213,6 @@ class DiscordAuth {
         this.userData = null;
         localStorage.removeItem('seismicDiscordAuth');
         this.updateUI();
-        alert('Disconnected from Discord.');
     }
 
     isAuthenticated() {

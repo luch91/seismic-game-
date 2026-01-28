@@ -6,12 +6,13 @@ const GameConfig = {
     playerSpeed: 160,
     playerJump: -400,
 
-    // Seismic branding colors
+    // Seismic branding colors (dark teal / maroon / warm beige gradient)
     colors: {
-        primary: 0xff00ff,    // Magenta/Pink
-        secondary: 0xaa00ff,  // Purple
-        background: 0x1a0033, // Dark purple
-        platform: 0x6600aa,   // Medium purple
+        primary: 0xc8a898,    // Warm beige
+        secondary: 0x8b4a3a,  // Dusty rose
+        accent: 0x6b2a2a,     // Maroon
+        background: 0x0a1a1a, // Dark teal-black
+        platform: 0x3a1a1a,   // Dark maroon
         text: 0xffffff
     },
 
@@ -24,7 +25,8 @@ const GameConfig = {
             enemySpeed: 50,
             platformGaps: 'wide',
             movingPlatforms: false,
-            crystalCount: 5
+            crystalCount: 5,
+            timeLimit: 120
         },
         mag2: {
             name: 'Mag2',
@@ -33,7 +35,8 @@ const GameConfig = {
             enemySpeed: 60,
             platformGaps: 'wide',
             movingPlatforms: false,
-            crystalCount: 7
+            crystalCount: 7,
+            timeLimit: 110
         },
         mag3: {
             name: 'Mag3',
@@ -42,7 +45,8 @@ const GameConfig = {
             enemySpeed: 70,
             platformGaps: 'medium',
             movingPlatforms: false,
-            crystalCount: 8
+            crystalCount: 8,
+            timeLimit: 100
         },
         mag4: {
             name: 'Mag4',
@@ -51,7 +55,8 @@ const GameConfig = {
             enemySpeed: 80,
             platformGaps: 'medium',
             movingPlatforms: true,
-            crystalCount: 10
+            crystalCount: 10,
+            timeLimit: 95
         },
         mag5: {
             name: 'Mag5',
@@ -60,7 +65,8 @@ const GameConfig = {
             enemySpeed: 90,
             platformGaps: 'medium',
             movingPlatforms: true,
-            crystalCount: 12
+            crystalCount: 12,
+            timeLimit: 90
         },
         mag6: {
             name: 'Mag6',
@@ -69,7 +75,8 @@ const GameConfig = {
             enemySpeed: 100,
             platformGaps: 'narrow',
             movingPlatforms: true,
-            crystalCount: 15
+            crystalCount: 15,
+            timeLimit: 85
         },
         mag7: {
             name: 'Mag7',
@@ -78,7 +85,8 @@ const GameConfig = {
             enemySpeed: 120,
             platformGaps: 'narrow',
             movingPlatforms: true,
-            crystalCount: 18
+            crystalCount: 18,
+            timeLimit: 75
         },
         mag8: {
             name: 'Mag8',
@@ -87,7 +95,8 @@ const GameConfig = {
             enemySpeed: 140,
             platformGaps: 'narrow',
             movingPlatforms: true,
-            crystalCount: 20
+            crystalCount: 20,
+            timeLimit: 65
         },
         mag9: {
             name: 'Mag9',
@@ -96,14 +105,26 @@ const GameConfig = {
             enemySpeed: 160,
             platformGaps: 'very_narrow',
             movingPlatforms: true,
-            crystalCount: 25
+            crystalCount: 25,
+            timeLimit: 60
         }
     },
 
     // Discord OAuth configuration
+    // To enable real Discord auth:
+    // 1. Create an app at https://discord.com/developers/applications
+    // 2. Set the redirect URI to your hosted URL + '/discord-callback'
+    // 3. Replace the IDs below with your actual values
     discord: {
-        clientId: 'YOUR_DISCORD_CLIENT_ID', // Replace with actual client ID
+        clientId: 'YOUR_DISCORD_CLIENT_ID',
+        guildId: 'YOUR_SEISMIC_GUILD_ID',
         redirectUri: window.location.origin + '/discord-callback',
-        scopes: ['identify', 'guilds.members.read']
+        scopes: ['identify', 'guilds.members.read'],
+        // Map your Discord server role IDs to Mag levels
+        roleMapping: {
+            // 'ROLE_ID_HERE': 1,  // Mag1 role
+            // 'ROLE_ID_HERE': 2,  // Mag2 role
+            // ...etc
+        }
     }
 };

@@ -1,6 +1,6 @@
 # Discord Integration Setup Guide
 
-This guide will help you set up Discord OAuth integration for the Seismic Platformer game.
+This guide will help you set up Discord OAuth integration for the Seismic Mag-Rush game.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ This guide will help you set up Discord OAuth integration for the Seismic Platfo
 
 1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
 2. Click **"New Application"**
-3. Enter a name: "Seismic Platformer"
+3. Enter a name: "Seismic Mag-Rush"
 4. Click **"Create"**
 
 ### 2. Get Your Client ID
@@ -224,4 +224,4 @@ If you encounter issues:
 
 ---
 
-Happy gaming! 🎮
+Happy gaming!
