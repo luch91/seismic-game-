@@ -8,10 +8,6 @@ class LevelSelectScene extends Phaser.Scene {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
 
-        // Restore the Discord panel (hidden during gameplay)
-        const discordPanel = document.getElementById('discord-panel');
-        if (discordPanel) discordPanel.style.display = '';
-
         // Background - dark teal
         this.add.rectangle(0, 0, width, height, 0x0a1a1a).setOrigin(0);
 

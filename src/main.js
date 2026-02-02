@@ -5,12 +5,6 @@ const config = {
     height: 600,
     parent: 'game-container',
     backgroundColor: '#0a1a1a',
-    scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: 800,
-        height: 600
-    },
     physics: {
         default: 'arcade',
         arcade: {
@@ -77,9 +71,9 @@ window.SeismicGame = {
         }
     },
 
-    // Get unlocked levels — merges completion progress + Discord unlocks
+    // Get unlocked levels — Mag1-3 always accessible, rest unlock by progression
     getUnlockedLevels: function() {
-        const unlocked = new Set([1]); // Level 1 always unlocked
+        const unlocked = new Set([1, 2, 3]); // Mag1-3 always unlocked
 
         // Each completed level unlocks itself + the next
         this.completedLevels.forEach(function(level) {
@@ -87,45 +81,12 @@ window.SeismicGame = {
             if (level + 1 <= 9) unlocked.add(level + 1);
         });
 
-        // Merge Discord-based unlocks if connected
-        var discordData = localStorage.getItem('seismicDiscordAuth');
-        if (discordData) {
-            try {
-                var data = JSON.parse(discordData);
-                if (data.unlockedLevels) {
-                    data.unlockedLevels.forEach(function(l) { unlocked.add(l); });
-                }
-            } catch (e) { /* ignore */ }
-        }
-
         return Array.from(unlocked).sort(function(a, b) { return a - b; });
     },
 
     unlockNextLevel: function(completedLevel) {
         // Persist completion
         this.markLevelComplete(completedLevel);
-
-        // Also update Discord data if connected
-        var nextLevel = completedLevel + 1;
-        if (nextLevel > 9) return;
-
-        var discordData = localStorage.getItem('seismicDiscordAuth');
-        if (!discordData) return;
-
-        try {
-            var data = JSON.parse(discordData);
-            if (!data.unlockedLevels) {
-                data.unlockedLevels = [];
-            }
-
-            if (!data.unlockedLevels.includes(nextLevel)) {
-                data.unlockedLevels.push(nextLevel);
-                data.unlockedLevels.sort(function(a, b) { return a - b; });
-                localStorage.setItem('seismicDiscordAuth', JSON.stringify(data));
-            }
-        } catch (e) {
-            console.error('Error unlocking next level:', e);
-        }
     }
 };
 

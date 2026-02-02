@@ -8,10 +8,6 @@ class MainMenuScene extends Phaser.Scene {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
 
-        // Restore the Discord panel (hidden during gameplay)
-        const discordPanel = document.getElementById('discord-panel');
-        if (discordPanel) discordPanel.style.display = '';
-
         // Resume audio context on any interaction (required by browsers)
         this.input.once('pointerdown', () => {
             soundManager.resume();
